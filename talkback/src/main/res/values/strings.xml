@@ -4,6 +4,32 @@
 
     <!--The human-readable name of this service. Do not translate. -->
     <string name="talkback_title" translatable="false">TalkBack_TfP</string>
+    <string name="study_mode_title">Study Mode</string>
+    <string name="study_mode_description">Open a note, read it accessibly, and find passages related to your questions. Notes stay on this phone.</string>
+    <string name="study_open_note">Open a note</string>
+    <string name="study_review_model_license">Review model license</string>
+    <string name="study_accept_model_license">I have reviewed and accept the model license</string>
+    <string name="study_hugging_face_token_hint">Hugging Face access token for this download</string>
+    <string name="study_download_recommended_model">Download recommended model</string>
+    <string name="study_cancel_model_download">Cancel model download</string>
+    <string name="study_model_installed">Model downloaded and verified. The local conversation engine is the next setup step.</string>
+    <string name="study_model_download_started">Downloading the local model…</string>
+    <string name="study_model_download_percent">Model download: %1$d%%</string>
+    <string name="study_model_download_cancelled">Model download cancelled.</string>
+    <string name="study_model_license_required">Review and accept the model license first.</string>
+    <string name="study_no_note_open">No note is open.</string>
+    <string name="study_loading_note">Opening note…</string>
+    <string name="study_note_ready">Note ready. You can read it or ask a question.</string>
+    <string name="study_searching_note">Searching this note…</string>
+    <string name="study_note_truncated">This note is very large. The first part is available in this preview.</string>
+    <string name="study_open_note_error">The selected note could not be opened.</string>
+    <string name="study_note_opened_announcement">Opened %1$s</string>
+    <string name="study_document_heading">Your note</string>
+    <string name="study_question_hint">Ask something about this note</string>
+    <string name="study_find_passage">Find relevant passage</string>
+    <string name="study_question_required">Enter a question first.</string>
+    <string name="study_no_relevant_passage">I could not find a passage matching that question in this note.</string>
+    <string name="study_source_citation">Source: %1$s</string>
 
     <!--
       Source: A brief description of TalkBack.

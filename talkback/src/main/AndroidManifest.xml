@@ -67,6 +67,27 @@
         <!-- Allows local profiling on release builds -->
         <profileable android:shell="true" />
 
+        <!-- Accessible note reader and local Study Assistant entry point. -->
+        <activity
+            android:name="com.google.android.accessibility.talkback.study.StudyModeActivity"
+            android:exported="true"
+            android:label="@string/study_mode_title"
+            android:launchMode="singleTop"
+            android:theme="@style/TalkBackSettings">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/markdown" />
+                <data android:mimeType="text/csv" />
+                <data android:mimeType="application/json" />
+            </intent-filter>
+        </activity>
+
         <!-- TalkBack -->
         <service
             android:icon="@drawable/icon"

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical"
+      android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:accessibilityHeading="true"
+        android:text="@string/study_mode_title"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/study_mode_description"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Button
+        android:id="@+id/study_open_note_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/study_open_note" />
+
+    <TextView
+        android:id="@+id/study_model_recommendation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:accessibilityHeading="true"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/study_review_model_license"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/study_review_model_license"
+        android:visibility="gone" />
+
+    <CheckBox
+        android:id="@+id/study_accept_model_license"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/study_accept_model_license"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/study_hugging_face_token"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:autofillHints="password"
+        android:hint="@string/study_hugging_face_token_hint"
+        android:importantForAutofill="no"
+        android:inputType="textPassword"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/study_download_model"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/study_download_recommended_model"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/study_model_download_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:max="100"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/study_cancel_model_download"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/study_cancel_model_download"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/study_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:accessibilityLiveRegion="polite"
+        android:text="@string/study_no_note_open" />
+
+    <TextView
+        android:id="@+id/study_document_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:accessibilityHeading="true"
+        android:text="@string/study_document_heading"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/study_question"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:hint="@string/study_question_hint"
+        android:imeOptions="actionSend"
+        android:inputType="textCapSentences|textMultiLine"
+        android:maxLines="4" />
+
+    <Button
+        android:id="@+id/study_ask_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="@string/study_find_passage" />
+
+    <TextView
+        android:id="@+id/study_answer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:accessibilityHeading="true"
+        android:accessibilityLiveRegion="polite"
+        android:textIsSelectable="true"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/study_document_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:lineSpacingExtra="4dp"
+        android:textIsSelectable="true"
+        android:visibility="gone" />
+
+  </LinearLayout>
+</ScrollView>
