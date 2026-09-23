@@ -12,6 +12,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioRecord
+import android.media.AudioTrack
+import android.media.MediaRecorder
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -42,6 +47,7 @@ import androidx.core.view.updatePadding
 import com.google.android.accessibility.talkback.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.materialswitch.MaterialSwitch
+import java.io.ByteArrayOutputStream
 import java.util.Locale
 import java.util.concurrent.Executors
 
@@ -49,8 +55,11 @@ import java.util.concurrent.Executors
 class StudyModeActivity : AppCompatActivity() {
   private val documentWorker = Executors.newSingleThreadExecutor()
   private val downloadWorker = Executors.newSingleThreadExecutor()
+  private val speechWorker = Executors.newSingleThreadExecutor()
+  private val speechDownloadWorker = Executors.newSingleThreadExecutor()
   private lateinit var repository: StudyDocumentRepository
   private lateinit var modelArtifacts: ModelArtifactManager
+  private lateinit var speechModels: SpeechModelManager
   private lateinit var documentTitle: TextView
   private lateinit var documentBody: TextView
   private lateinit var status: TextView
@@ -67,6 +76,13 @@ class StudyModeActivity : AppCompatActivity() {
   private var currentPage = AppPage.STUDY
   private var speechRecognizer: SpeechRecognizer? = null
   private var textToSpeech: TextToSpeech? = null
+  @Volatile private var audioRecord: AudioRecord? = null
+  @Volatile private var audioTrack: AudioTrack? = null
+  @Volatile private var localRecording = false
+  @Volatile private var localReading = false
+  @Volatile private var transcribeRecordingOnStop = true
+  @Volatile private var speechDownloadActive = false
+  @Volatile private var speechDownloadingModelId: String? = null
   private var offlineVoiceReady = false
   private val preferences by lazy { getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE) }
 
@@ -81,7 +97,7 @@ class StudyModeActivity : AppCompatActivity() {
   private val requestMicrophone =
     registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
       refreshSettingsStatus()
-      if (granted) startVoiceRecognition()
+      if (granted) startBestVoiceRecognition()
       else showStatus(R.string.study_voice_permission_denied)
     }
 
@@ -91,6 +107,7 @@ class StudyModeActivity : AppCompatActivity() {
     setContentView(R.layout.activity_study_mode)
     repository = StudyDocumentRepository(contentResolver)
     modelArtifacts = ModelArtifactManager(this)
+    speechModels = SpeechModelManager(this)
 
     documentTitle = findViewById(R.id.study_document_title)
     documentBody = findViewById(R.id.study_document_body)
@@ -117,6 +134,7 @@ class StudyModeActivity : AppCompatActivity() {
     applySafeAreas()
     setupNavigation()
     setupSettings()
+    configureSpeechModels()
     initializeOfflineReadingVoice()
     showHardwareRecommendation()
     handleIncomingDocument(intent)
@@ -134,12 +152,17 @@ class StudyModeActivity : AppCompatActivity() {
   }
 
   override fun onDestroy() {
+    stopLocalRecording(transcribe = false)
+    stopLocalReading()
     speechRecognizer?.destroy()
     textToSpeech?.stop()
     textToSpeech?.shutdown()
     modelArtifacts.cancel()
+    speechModels.cancel()
     documentWorker.shutdownNow()
     downloadWorker.shutdownNow()
+    speechWorker.shutdownNow()
+    speechDownloadWorker.shutdownNow()
     super.onDestroy()
   }
 
@@ -289,6 +312,119 @@ class StudyModeActivity : AppCompatActivity() {
     }
   }
 
+  private fun configureSpeechModels() {
+    if (!::speechModels.isInitialized) return
+    val language = Locale.getDefault().language
+    configureSpeechModelCard(
+      model = SpeechModelCatalog.whisperTiny,
+      titleId = R.id.speech_recognition_title,
+      statusId = R.id.speech_recognition_status,
+      progressId = R.id.speech_recognition_progress,
+      downloadId = R.id.speech_recognition_download,
+      deleteId = R.id.speech_recognition_delete,
+    )
+    configureSpeechModelCard(
+      model = SpeechModelCatalog.recommendedVoice(language),
+      titleId = R.id.speech_voice_title,
+      statusId = R.id.speech_voice_status,
+      progressId = R.id.speech_voice_progress,
+      downloadId = R.id.speech_voice_download,
+      deleteId = R.id.speech_voice_delete,
+    )
+  }
+
+  private fun configureSpeechModelCard(
+    model: SpeechModelDescriptor,
+    titleId: Int,
+    statusId: Int,
+    progressId: Int,
+    downloadId: Int,
+    deleteId: Int,
+  ) {
+    val title = findViewById<TextView>(titleId)
+    val modelStatus = findViewById<TextView>(statusId)
+    val progress = findViewById<ProgressBar>(progressId)
+    val download = findViewById<Button>(downloadId)
+    val delete = findViewById<Button>(deleteId)
+    val installed = speechModels.isInstalled(model)
+    val supported = DeviceProfiler.read(this).totalMemoryBytes >= model.minimumTotalMemoryBytes
+    val downloading = speechDownloadingModelId == model.id
+    title.text = model.displayName
+    progress.visibility = if (downloading) View.VISIBLE else View.GONE
+    if (!downloading) {
+      modelStatus.text =
+        when {
+          installed -> getString(R.string.speech_model_ready)
+          !supported -> getString(R.string.speech_model_not_supported)
+          else ->
+            getString(
+              R.string.speech_model_recommendation,
+              model.displayName,
+              (model.downloadBytes + MIB - 1L) / MIB,
+              model.licenseName,
+            )
+        }
+    }
+    download.visibility = if (installed) View.GONE else View.VISIBLE
+    download.isEnabled = supported && !speechDownloadActive
+    delete.visibility = if (installed) View.VISIBLE else View.GONE
+    delete.isEnabled = !speechDownloadActive
+    download.setOnClickListener {
+      startSpeechModelDownload(model, modelStatus, progress, download, delete)
+    }
+    delete.setOnClickListener {
+      speechDownloadWorker.execute {
+        val removed = speechModels.delete(model)
+        runOnUiThread {
+          if (removed) modelStatus.setText(R.string.speech_model_removed)
+          configureSpeechModels()
+          refreshSettingsStatus()
+        }
+      }
+    }
+  }
+
+  private fun startSpeechModelDownload(
+    model: SpeechModelDescriptor,
+    modelStatus: TextView,
+    progress: ProgressBar,
+    download: Button,
+    delete: Button,
+  ) {
+    if (speechDownloadActive) return
+    speechDownloadActive = true
+    speechDownloadingModelId = model.id
+    download.isEnabled = false
+    delete.isEnabled = false
+    progress.progress = 0
+    progress.visibility = View.VISIBLE
+    speechDownloadWorker.execute {
+      val result =
+        speechModels.download(model) { update ->
+          runOnUiThread {
+            progress.progress = update.percent
+            modelStatus.text =
+              getString(R.string.speech_model_downloading, model.displayName, update.percent)
+          }
+        }
+      runOnUiThread {
+        speechDownloadActive = false
+        speechDownloadingModelId = null
+        progress.visibility = View.GONE
+        when (result) {
+          is SpeechDownloadResult.Success -> modelStatus.setText(R.string.speech_model_ready)
+          is SpeechDownloadResult.Failure ->
+            modelStatus.text = getString(R.string.speech_model_failed, result.message)
+          SpeechDownloadResult.Cancelled ->
+            modelStatus.setText(R.string.study_model_download_cancelled)
+        }
+        modelStatus.announceForAccessibility(modelStatus.text)
+        configureSpeechModels()
+        refreshSettingsStatus()
+      }
+    }
+  }
+
   private fun startModelDownload(model: ModelDescriptor, accessToken: String) {
     val progressBar = findViewById<ProgressBar>(R.id.study_model_download_progress)
     val downloadButton = findViewById<Button>(R.id.study_download_model)
@@ -430,6 +566,7 @@ class StudyModeActivity : AppCompatActivity() {
       focusedView.clearFocus()
     }
     pageTitle.announceForAccessibility(pageTitle.text)
+    if (page == AppPage.MODELS) configureSpeechModels()
     if (page == AppPage.SETTINGS) refreshSettingsStatus()
   }
 
@@ -486,8 +623,10 @@ class StudyModeActivity : AppCompatActivity() {
     val onDeviceRecognition =
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
         SpeechRecognizer.isOnDeviceRecognitionAvailable(this)
+    val recognitionReady = speechModels.isInstalled(SpeechModelCatalog.whisperTiny) || onDeviceRecognition
+    val voiceReady = speechModels.installedVoice() != null || offlineVoiceReady
     findViewById<TextView>(R.id.settings_speech_status).setText(
-      if (onDeviceRecognition && offlineVoiceReady) R.string.settings_speech_ready
+      if (recognitionReady && voiceReady) R.string.settings_speech_ready
       else R.string.settings_speech_partial
     )
   }
@@ -511,11 +650,8 @@ class StudyModeActivity : AppCompatActivity() {
   }
 
   private fun beginVoiceQuestion() {
-    if (
-      Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-        !SpeechRecognizer.isOnDeviceRecognitionAvailable(this)
-    ) {
-      showStatus(R.string.study_voice_unavailable)
+    if (localRecording) {
+      stopLocalRecording(transcribe = true)
       return
     }
     if (
@@ -525,7 +661,120 @@ class StudyModeActivity : AppCompatActivity() {
       requestMicrophone.launch(Manifest.permission.RECORD_AUDIO)
       return
     }
-    startVoiceRecognition()
+    startBestVoiceRecognition()
+  }
+
+  private fun startBestVoiceRecognition() {
+    if (speechModels.isInstalled(SpeechModelCatalog.whisperTiny)) startLocalRecording()
+    else startVoiceRecognition()
+  }
+
+  @Suppress("MissingPermission")
+  private fun startLocalRecording() {
+    val minimumBuffer =
+      AudioRecord.getMinBufferSize(
+        LOCAL_SPEECH_SAMPLE_RATE,
+        AudioFormat.CHANNEL_IN_MONO,
+        AudioFormat.ENCODING_PCM_16BIT,
+      )
+    if (minimumBuffer <= 0) {
+      showStatus(R.string.speech_local_failed)
+      return
+    }
+    val recorder =
+      runCatching {
+          AudioRecord(
+            MediaRecorder.AudioSource.VOICE_RECOGNITION,
+            LOCAL_SPEECH_SAMPLE_RATE,
+            AudioFormat.CHANNEL_IN_MONO,
+            AudioFormat.ENCODING_PCM_16BIT,
+            minimumBuffer.coerceAtLeast(LOCAL_SPEECH_BUFFER_BYTES),
+          )
+        }
+        .getOrElse {
+          showStatus(R.string.speech_local_failed)
+          return
+        }
+    if (recorder.state != AudioRecord.STATE_INITIALIZED) {
+      recorder.release()
+      showStatus(R.string.speech_local_failed)
+      return
+    }
+    stopReading()
+    audioRecord = recorder
+    localRecording = true
+    transcribeRecordingOnStop = true
+    voiceButton.setText(R.string.speech_stop_recording)
+    showStatus(R.string.speech_local_listening)
+    recorder.startRecording()
+    speechWorker.execute { captureAndTranscribe(recorder, minimumBuffer) }
+  }
+
+  private fun captureAndTranscribe(recorder: AudioRecord, minimumBuffer: Int) {
+    val audio = ByteArrayOutputStream()
+    val buffer = ByteArray(minimumBuffer.coerceAtLeast(LOCAL_SPEECH_BUFFER_BYTES))
+    val maximumBytes = LOCAL_SPEECH_SAMPLE_RATE * 2 * MAX_RECORDING_SECONDS
+    try {
+      while (localRecording && audio.size() < maximumBytes) {
+        val count = recorder.read(buffer, 0, minOf(buffer.size, maximumBytes - audio.size()))
+        if (count > 0) audio.write(buffer, 0, count)
+        else if (count < 0) throw IllegalStateException("Microphone recording failed: $count")
+      }
+    } catch (_: Exception) {
+      transcribeRecordingOnStop = false
+    } finally {
+      localRecording = false
+      runCatching { recorder.stop() }
+      recorder.release()
+      if (audioRecord === recorder) audioRecord = null
+    }
+
+    val shouldTranscribe = transcribeRecordingOnStop && audio.size() > 0
+    runOnUiThread {
+      voiceButton.setText(R.string.study_ask_by_voice)
+      if (shouldTranscribe) showStatus(R.string.speech_local_transcribing)
+      else if (!isFinishing && !isDestroyed) showStatus(R.string.speech_local_failed)
+    }
+    if (!shouldTranscribe) return
+    val samples = pcm16ToFloat(audio.toByteArray())
+    runCatching {
+        LocalSpeechEngine(speechModels)
+          .transcribe(samples, LOCAL_SPEECH_SAMPLE_RATE, Locale.getDefault().language)
+      }
+      .onSuccess { spokenQuestion ->
+        runOnUiThread {
+          if (spokenQuestion.isBlank()) {
+            showStatus(R.string.study_voice_error)
+          } else {
+            question.setText(spokenQuestion)
+            question.setSelection(spokenQuestion.length)
+            showStatus(R.string.study_note_ready)
+            question.announceForAccessibility(spokenQuestion)
+          }
+        }
+      }
+      .onFailure {
+        runOnUiThread {
+          if (!isFinishing && !isDestroyed) showStatus(R.string.speech_local_failed)
+        }
+      }
+  }
+
+  private fun stopLocalRecording(transcribe: Boolean) {
+    transcribeRecordingOnStop = transcribe
+    localRecording = false
+    runCatching { audioRecord?.stop() }
+    if (::voiceButton.isInitialized) voiceButton.setText(R.string.study_ask_by_voice)
+  }
+
+  private fun pcm16ToFloat(bytes: ByteArray): FloatArray {
+    val result = FloatArray(bytes.size / 2)
+    result.indices.forEach { index ->
+      val low = bytes[index * 2].toInt() and 0xff
+      val high = bytes[index * 2 + 1].toInt()
+      result[index] = ((high shl 8) or low).toShort() / 32768f
+    }
+    return result
   }
 
   private fun startVoiceRecognition() {
@@ -644,11 +893,16 @@ class StudyModeActivity : AppCompatActivity() {
   }
 
   private fun toggleReading() {
-    if (textToSpeech?.isSpeaking == true) {
+    if (localReading || textToSpeech?.isSpeaking == true) {
       stopReading()
       return
     }
     val document = currentDocument ?: return
+    val localVoice = speechModels.installedVoice(Locale.getDefault().language)
+    if (localVoice != null) {
+      readWithLocalVoice(document.text, localVoice, isNote = true)
+      return
+    }
     val engine = textToSpeech
     if (!offlineVoiceReady || engine == null) {
       showStatus(R.string.study_offline_voice_unavailable)
@@ -666,6 +920,11 @@ class StudyModeActivity : AppCompatActivity() {
   }
 
   private fun readAnswerAloud(text: String) {
+    val localVoice = speechModels.installedVoice(Locale.getDefault().language)
+    if (localVoice != null) {
+      readWithLocalVoice(text, localVoice, isNote = false)
+      return
+    }
     val engine = textToSpeech
     if (!offlineVoiceReady || engine == null) return
     val chunks = chunkForSpeech(text)
@@ -677,6 +936,77 @@ class StudyModeActivity : AppCompatActivity() {
         if (index == chunks.lastIndex) LAST_ANSWER_UTTERANCE_ID else "soma-answer-$index"
       engine.speak(chunk, queueMode, Bundle(), utteranceId)
     }
+  }
+
+  private fun readWithLocalVoice(
+    text: String,
+    model: SpeechModelDescriptor,
+    isNote: Boolean,
+  ) {
+    val chunks = text.lineSequence().flatMap { it.trim().chunked(LOCAL_TTS_CHUNK_LENGTH) }
+      .filter { it.isNotBlank() }
+      .toList()
+    if (chunks.isEmpty()) return
+    stopReading()
+    localReading = true
+    if (isNote) readButton.setText(R.string.study_stop_reading)
+    showStatus(if (isNote) R.string.study_reading_note else R.string.study_reading_answer)
+    speechWorker.execute {
+      runCatching {
+          LocalSpeechEngine(speechModels).synthesizeAll(chunks, model) { speech ->
+            if (localReading) playLocalSpeech(speech)
+          }
+        }
+        .onFailure {
+          runOnUiThread {
+            if (!isFinishing && !isDestroyed) showStatus(R.string.study_offline_voice_unavailable)
+          }
+        }
+      runOnUiThread {
+        localReading = false
+        finishReading()
+      }
+    }
+  }
+
+  private fun playLocalSpeech(speech: SynthesizedSpeech) {
+    if (!localReading || speech.samples.isEmpty()) return
+    val bufferBytes = speech.samples.size * Float.SIZE_BYTES
+    val track =
+      AudioTrack.Builder()
+        .setAudioAttributes(
+          AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+            .build()
+        )
+        .setAudioFormat(
+          AudioFormat.Builder()
+            .setEncoding(AudioFormat.ENCODING_PCM_FLOAT)
+            .setSampleRate(speech.sampleRate)
+            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+            .build()
+        )
+        .setTransferMode(AudioTrack.MODE_STATIC)
+        .setBufferSizeInBytes(bufferBytes)
+        .build()
+    audioTrack = track
+    try {
+      track.write(speech.samples, 0, speech.samples.size, AudioTrack.WRITE_BLOCKING)
+      track.play()
+      while (localReading && track.playbackHeadPosition < speech.samples.size) {
+        Thread.sleep(50)
+      }
+    } finally {
+      runCatching { track.stop() }
+      track.release()
+      if (audioTrack === track) audioTrack = null
+    }
+  }
+
+  private fun stopLocalReading() {
+    localReading = false
+    runCatching { audioTrack?.stop() }
   }
 
   private fun chunkForSpeech(text: String): List<String> {
@@ -691,6 +1021,7 @@ class StudyModeActivity : AppCompatActivity() {
   }
 
   private fun stopReading() {
+    stopLocalReading()
     textToSpeech?.stop()
     finishReading()
   }
@@ -722,6 +1053,11 @@ class StudyModeActivity : AppCompatActivity() {
     const val LAST_UTTERANCE_ID = "soma-note-last"
     const val LAST_ANSWER_UTTERANCE_ID = "soma-answer-last"
     const val ACTION_TTS_SETTINGS = "com.android.settings.TTS_SETTINGS"
+    const val LOCAL_SPEECH_SAMPLE_RATE = 16_000
+    const val LOCAL_SPEECH_BUFFER_BYTES = 8_192
+    const val MAX_RECORDING_SECONDS = 45
+    const val LOCAL_TTS_CHUNK_LENGTH = 900
+    const val MIB = 1024L * 1024L
   }
 
   private enum class AppPage {

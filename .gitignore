@@ -20,4 +20,6 @@ braille/translate/build/
 build/
 proguard/build/
 talkback/build/
+talkback/libs/*.aar
+talkback/libs/*.part
 utils/build/

@@ -126,6 +126,135 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:accessibilityHeading="true"
+        android:text="@string/speech_models_title"
+        android:textColor="@color/soma_study_text_primary"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:lineSpacingExtra="4dp"
+        android:text="@string/speech_models_description"
+        android:textColor="@color/soma_study_text_secondary"
+        android:textSize="14sp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/soma_setup_background"
+        android:orientation="vertical"
+        android:padding="20dp">
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:letterSpacing="0.08"
+          android:text="@string/speech_recognition_label"
+          android:textAllCaps="true"
+          android:textColor="@color/soma_study_primary"
+          android:textSize="12sp" />
+      <TextView
+          android:id="@+id/speech_recognition_title"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:textColor="@color/soma_study_text_primary"
+          android:textSize="17sp"
+          android:textStyle="bold" />
+      <TextView
+          android:id="@+id/speech_recognition_status"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:accessibilityLiveRegion="polite"
+          android:textColor="@color/soma_study_text_secondary"
+          android:textSize="14sp" />
+      <ProgressBar
+          android:id="@+id/speech_recognition_progress"
+          style="?android:attr/progressBarStyleHorizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="12dp"
+          android:max="100"
+          android:visibility="gone" />
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/speech_recognition_download"
+          android:layout_width="match_parent"
+          android:layout_height="52dp"
+          android:layout_marginTop="12dp"
+          android:text="@string/speech_download_recognition"
+          android:textAllCaps="false"
+          app:cornerRadius="16dp" />
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/speech_recognition_delete"
+          style="@style/Widget.MaterialComponents.Button.TextButton"
+          android:layout_width="match_parent"
+          android:layout_height="48dp"
+          android:text="@string/speech_remove_model"
+          android:textAllCaps="false"
+          android:visibility="gone" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/soma_setup_background"
+        android:orientation="vertical"
+        android:padding="20dp">
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:letterSpacing="0.08"
+          android:text="@string/speech_voice_label"
+          android:textAllCaps="true"
+          android:textColor="@color/soma_study_primary"
+          android:textSize="12sp" />
+      <TextView
+          android:id="@+id/speech_voice_title"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:textColor="@color/soma_study_text_primary"
+          android:textSize="17sp"
+          android:textStyle="bold" />
+      <TextView
+          android:id="@+id/speech_voice_status"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:accessibilityLiveRegion="polite"
+          android:textColor="@color/soma_study_text_secondary"
+          android:textSize="14sp" />
+      <ProgressBar
+          android:id="@+id/speech_voice_progress"
+          style="?android:attr/progressBarStyleHorizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="12dp"
+          android:max="100"
+          android:visibility="gone" />
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/speech_voice_download"
+          android:layout_width="match_parent"
+          android:layout_height="52dp"
+          android:layout_marginTop="12dp"
+          android:text="@string/speech_download_voice"
+          android:textAllCaps="false"
+          app:cornerRadius="16dp" />
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/speech_voice_delete"
+          style="@style/Widget.MaterialComponents.Button.TextButton"
+          android:layout_width="match_parent"
+          android:layout_height="48dp"
+          android:text="@string/speech_remove_model"
+          android:textAllCaps="false"
+          android:visibility="gone" />
+    </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:accessibilityHeading="true"
         android:text="@string/models_why_title"
         android:textColor="@color/soma_study_text_primary"
         android:textSize="20sp"

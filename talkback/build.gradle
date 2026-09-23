@@ -2,7 +2,56 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply from: "../shared.gradle"
 
+def sherpaOnnxVersion = "1.13.8"
+def sherpaOnnxAar = file("$buildDir/downloads/sherpa-onnx-${sherpaOnnxVersion}.aar")
+def sherpaOnnxRuntime = file("$buildDir/generated/sherpa-onnx")
+def sherpaOnnxClasses = file("$sherpaOnnxRuntime/classes.jar")
+def sherpaOnnxSha256 = "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96"
+
+tasks.register("prepareSherpaOnnx") {
+    outputs.file(sherpaOnnxClasses)
+    outputs.dir(file("$sherpaOnnxRuntime/jni"))
+    doLast {
+        sherpaOnnxAar.parentFile.mkdirs()
+        if (!sherpaOnnxAar.exists()) {
+            def temporary = file("${sherpaOnnxAar}.part")
+            temporary.delete()
+            new URL("https://github.com/k2-fsa/sherpa-onnx/releases/download/v${sherpaOnnxVersion}/sherpa-onnx-${sherpaOnnxVersion}.aar")
+                .withInputStream { input -> temporary.withOutputStream { output -> output << input } }
+            java.nio.file.Files.move(
+                temporary.toPath(),
+                sherpaOnnxAar.toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            )
+        }
+        def digest = java.security.MessageDigest.getInstance("SHA-256")
+        sherpaOnnxAar.withInputStream { input ->
+            byte[] buffer = new byte[131072]
+            int count
+            while ((count = input.read(buffer)) > 0) digest.update(buffer, 0, count)
+        }
+        def actual = digest.digest().encodeHex().toString()
+        if (actual != sherpaOnnxSha256) {
+            sherpaOnnxAar.delete()
+            throw new GradleException("sherpa-onnx runtime checksum mismatch")
+        }
+        delete sherpaOnnxRuntime
+        copy {
+            from zipTree(sherpaOnnxAar)
+            into sherpaOnnxRuntime
+            include "classes.jar"
+            include "jni/arm64-v8a/**"
+            include "jni/armeabi-v7a/**"
+        }
+        if (!sherpaOnnxClasses.exists()) {
+            throw new GradleException("sherpa-onnx runtime classes are missing")
+        }
+    }
+}
+
 dependencies {
+    implementation files(sherpaOnnxClasses)
+    implementation 'org.apache.commons:commons-compress:1.27.1'
     implementation project(':proguard')
     implementation project(':utils')
     implementation project(':brailleime')
@@ -15,8 +64,11 @@ dependencies {
     wearImplementation project(':materialtheme')
 }
 
+preBuild.dependsOn tasks.named("prepareSherpaOnnx")
+
 android {
     namespace "com.google.android.accessibility.talkback"
+    sourceSets.main.jniLibs.srcDir file("$sherpaOnnxRuntime/jni")
     defaultConfig {
         buildConfigField("String", "APPLICATION_ID", '"' + talkbackApplicationId + '"')
         buildConfigField("String", "GEMINI_API_KEY", "\"\"")

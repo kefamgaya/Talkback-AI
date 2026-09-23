@@ -9,13 +9,19 @@ The Android package is `com.kefamgaya.somaai`. The installed application asks
 for no contacts, location, phone, notification, Bluetooth, broad storage,
 package-list, or accessibility-service permission. Internet access is used for
 optional model downloads. Microphone access is optional and requested only when
-the student taps **Ask by voice**; Android's on-device recognizer is required.
+the student taps **Ask by voice**.
 
 The launcher experience has three accessible destinations: **Study** for notes
 and questions, **Models** for hardware-aware local AI downloads, and
 **Settings** for speech, study behavior, permissions, and privacy controls.
 System bars, display cutouts, gesture navigation, and the keyboard are handled
 with runtime window insets instead of fixed device-specific padding.
+
+The Models page also offers checksum-verified offline speech packs. Whisper
+Tiny multilingual provides local dictation, while a compact Piper voice is
+recommended from the phone language (Kiswahili or English) for local read-aloud.
+These packs are optional and removable. Soma uses Android's installed offline
+speech services when a matching pack has not been downloaded.
 
 This project began from the open-source Google TalkBack codebase. The original
 Apache 2.0 license and copyright notices are retained.
