@@ -11,7 +11,7 @@
     <item name="colorPrimaryDark">@color/soma_primary_dark</item>
     <item name="colorAccent">@color/soma_accent</item>
     <item name="android:fontFamily">sans</item>
-    <item name="android:navigationBarColor">@color/soma_icon_background</item>
+    <item name="android:navigationBarColor">@color/soma_study_background</item>
     <item name="android:statusBarColor">@color/soma_primary_dark</item>
     <item name="android:windowLightNavigationBar">true</item>
   </style>

@@ -1,93 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/soma_study_background"
+    android:clipToPadding="false"
     android:fillViewport="true">
 
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:orientation="vertical"
-      android:padding="24dp">
+      android:paddingStart="20dp"
+      android:paddingTop="24dp"
+      android:paddingEnd="20dp"
+      android:paddingBottom="48dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+      <ImageView
+          android:layout_width="52dp"
+          android:layout_height="52dp"
+          android:background="@drawable/soma_logo_background"
+          android:importantForAccessibility="no"
+          android:padding="9dp"
+          android:src="@drawable/soma_ai_mark" />
+
+      <LinearLayout
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="12dp"
+          android:layout_weight="1"
+          android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/study_mode_title"
+            android:textColor="@color/soma_study_text_primary"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.08"
+            android:text="@string/study_private_label"
+            android:textAllCaps="true"
+            android:textColor="@color/soma_study_primary"
+            android:textSize="11sp" />
+      </LinearLayout>
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
         android:accessibilityHeading="true"
-        android:text="@string/study_mode_title"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textStyle="bold" />
+        android:fontFamily="sans-serif-medium"
+        android:lineSpacingMultiplier="1.05"
+        android:text="@string/study_hero_title"
+        android:textColor="@color/soma_study_text_primary"
+        android:textSize="34sp" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="10dp"
+        android:lineSpacingExtra="3dp"
         android:text="@string/study_mode_description"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textColor="@color/soma_study_text_secondary"
+        android:textSize="16sp" />
 
-    <Button
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/soma_privacy_badge"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="8dp">
+
+      <ImageView
+          android:layout_width="18dp"
+          android:layout_height="18dp"
+          android:importantForAccessibility="no"
+          android:src="@drawable/soma_lock"
+          app:tint="@color/soma_study_success" />
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="8dp"
+          android:fontFamily="sans-serif-medium"
+          android:text="@string/study_privacy_badge"
+          android:textColor="@color/soma_study_success"
+          android:textSize="13sp" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/study_open_note_button"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/study_open_note" />
-
-    <TextView
-        android:id="@+id/study_model_recommendation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:accessibilityHeading="true"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textStyle="bold" />
-
-    <Button
-        android:id="@+id/study_review_model_license"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="@string/study_review_model_license"
-        android:visibility="gone" />
-
-    <CheckBox
-        android:id="@+id/study_accept_model_license"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/study_accept_model_license"
-        android:visibility="gone" />
-
-    <EditText
-        android:id="@+id/study_hugging_face_token"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:autofillHints="password"
-        android:hint="@string/study_hugging_face_token_hint"
-        android:importantForAutofill="no"
-        android:inputType="textPassword"
-        android:visibility="gone" />
-
-    <Button
-        android:id="@+id/study_download_model"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/study_download_recommended_model"
-        android:visibility="gone" />
-
-    <ProgressBar
-        android:id="@+id/study_model_download_progress"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:max="100"
-        android:visibility="gone" />
-
-    <Button
-        android:id="@+id/study_cancel_model_download"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/study_cancel_model_download"
-        android:visibility="gone" />
+        android:layout_height="56dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/study_open_note"
+        android:textAllCaps="false"
+        android:textSize="16sp"
+        app:cornerRadius="18dp"
+        app:icon="@drawable/soma_document"
+        app:iconGravity="textStart"
+        app:iconPadding="10dp" />
 
     <TextView
         android:id="@+id/study_status"
@@ -95,53 +126,233 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:accessibilityLiveRegion="polite"
-        android:text="@string/study_no_note_open" />
+        android:gravity="center"
+        android:text="@string/study_no_note_open"
+        android:textColor="@color/soma_study_text_secondary"
+        android:textSize="13sp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="28dp"
+        android:background="@color/soma_study_border" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.08"
+        android:text="@string/study_workspace_label"
+        android:textAllCaps="true"
+        android:textColor="@color/soma_study_primary"
+        android:textSize="12sp" />
 
     <TextView
         android:id="@+id/study_document_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="8dp"
         android:accessibilityHeading="true"
-        android:text="@string/study_document_heading"
-        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/study_empty_note_title"
+        android:textColor="@color/soma_study_text_primary"
+        android:textSize="22sp"
         android:textStyle="bold" />
-
-    <EditText
-        android:id="@+id/study_question"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:hint="@string/study_question_hint"
-        android:imeOptions="actionSend"
-        android:inputType="textCapSentences|textMultiLine"
-        android:maxLines="4" />
-
-    <Button
-        android:id="@+id/study_ask_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:enabled="false"
-        android:text="@string/study_find_passage" />
-
-    <TextView
-        android:id="@+id/study_answer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:accessibilityHeading="true"
-        android:accessibilityLiveRegion="polite"
-        android:textIsSelectable="true"
-        android:visibility="gone" />
 
     <TextView
         android:id="@+id/study_document_body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:lineSpacingExtra="4dp"
+        android:layout_marginTop="16dp"
+        android:lineSpacingExtra="5dp"
+        android:textColor="@color/soma_study_text_primary"
         android:textIsSelectable="true"
+        android:textSize="16sp"
         android:visibility="gone" />
 
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:accessibilityHeading="true"
+        android:text="@string/study_question_section_title"
+        android:textColor="@color/soma_study_text_primary"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="@string/study_question_section_description"
+        android:textColor="@color/soma_study_text_secondary"
+        android:textSize="14sp" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="@string/study_question_hint"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusBottomEnd="18dp"
+        app:boxCornerRadiusBottomStart="18dp"
+        app:boxCornerRadiusTopEnd="18dp"
+        app:boxCornerRadiusTopStart="18dp"
+        app:boxStrokeColor="@color/soma_study_primary"
+        app:counterEnabled="true"
+        app:counterMaxLength="500">
+
+      <com.google.android.material.textfield.TextInputEditText
+          android:id="@+id/study_question"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:enabled="false"
+          android:imeOptions="actionSend"
+          android:inputType="textCapSentences|textMultiLine"
+          android:maxLength="500"
+          android:maxLines="4"
+          android:minHeight="112dp"
+          android:paddingTop="18dp"
+          android:paddingBottom="18dp"
+          android:textColor="@color/soma_study_text_primary" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/study_ask_button"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="12dp"
+        android:enabled="false"
+        android:text="@string/study_find_passage"
+        android:textAllCaps="false"
+        android:textSize="15sp"
+        app:cornerRadius="16dp"
+        app:icon="@drawable/soma_search"
+        app:iconGravity="textStart"
+        app:iconPadding="10dp" />
+
+    <TextView
+        android:id="@+id/study_answer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:accessibilityHeading="true"
+        android:accessibilityLiveRegion="polite"
+        android:background="@drawable/soma_answer_background"
+        android:lineSpacingExtra="4dp"
+        android:padding="18dp"
+        android:textColor="@color/soma_study_text_primary"
+        android:textIsSelectable="true"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:background="@drawable/soma_setup_background"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:fontFamily="sans-serif-medium"
+          android:letterSpacing="0.08"
+          android:text="@string/study_model_section_label"
+          android:textAllCaps="true"
+          android:textColor="@color/soma_study_primary"
+          android:textSize="12sp" />
+
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:accessibilityHeading="true"
+          android:text="@string/study_model_section_title"
+          android:textColor="@color/soma_study_text_primary"
+          android:textSize="20sp"
+          android:textStyle="bold" />
+
+      <TextView
+          android:id="@+id/study_model_recommendation"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:lineSpacingExtra="3dp"
+          android:textColor="@color/soma_study_text_secondary"
+          android:textSize="14sp" />
+
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/study_review_model_license"
+          style="@style/Widget.MaterialComponents.Button.TextButton"
+          android:layout_width="match_parent"
+          android:layout_height="48dp"
+          android:layout_marginTop="8dp"
+          android:text="@string/study_review_model_license"
+          android:textAllCaps="false"
+          android:visibility="gone" />
+
+      <CheckBox
+          android:id="@+id/study_accept_model_license"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:minHeight="48dp"
+          android:text="@string/study_accept_model_license"
+          android:textColor="@color/soma_study_text_primary"
+          android:visibility="gone" />
+
+      <com.google.android.material.textfield.TextInputLayout
+          android:id="@+id/study_hugging_face_token_container"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          android:hint="@string/study_hugging_face_token_hint"
+          android:visibility="gone"
+          app:boxBackgroundMode="outline"
+          app:boxCornerRadiusBottomEnd="14dp"
+          app:boxCornerRadiusBottomStart="14dp"
+          app:boxCornerRadiusTopEnd="14dp"
+          app:boxCornerRadiusTopStart="14dp"
+          app:endIconMode="password_toggle">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/study_hugging_face_token"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:autofillHints="password"
+            android:importantForAutofill="no"
+            android:inputType="textPassword" />
+      </com.google.android.material.textfield.TextInputLayout>
+
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/study_download_model"
+          android:layout_width="match_parent"
+          android:layout_height="52dp"
+          android:layout_marginTop="12dp"
+          android:text="@string/study_download_recommended_model"
+          android:textAllCaps="false"
+          android:visibility="gone"
+          app:cornerRadius="16dp" />
+
+      <ProgressBar
+          android:id="@+id/study_model_download_progress"
+          style="?android:attr/progressBarStyleHorizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="12dp"
+          android:max="100"
+          android:visibility="gone" />
+
+      <com.google.android.material.button.MaterialButton
+          android:id="@+id/study_cancel_model_download"
+          style="@style/Widget.MaterialComponents.Button.TextButton"
+          android:layout_width="match_parent"
+          android:layout_height="48dp"
+          android:text="@string/study_cancel_model_download"
+          android:textAllCaps="false"
+          android:visibility="gone" />
+    </LinearLayout>
   </LinearLayout>
 </ScrollView>

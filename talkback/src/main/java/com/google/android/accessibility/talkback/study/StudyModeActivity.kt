@@ -89,6 +89,9 @@ class StudyModeActivity : AppCompatActivity() {
     setLoading(true)
     currentDocument = null
     askButton.isEnabled = false
+    question.isEnabled = false
+    question.text.clear()
+    documentTitle.setText(R.string.study_loading_note_title)
     documentBody.visibility = View.GONE
     answer.visibility = View.GONE
     status.setText(R.string.study_loading_note)
@@ -98,6 +101,7 @@ class StudyModeActivity : AppCompatActivity() {
         .onFailure { error ->
           runOnUiThread {
             setLoading(false)
+            documentTitle.setText(R.string.study_empty_note_title)
             status.text = error.message ?: getString(R.string.study_open_note_error)
             status.announceForAccessibility(status.text)
           }
@@ -110,6 +114,7 @@ class StudyModeActivity : AppCompatActivity() {
     documentTitle.text = document.displayName
     documentBody.text = document.text
     documentBody.visibility = View.VISIBLE
+    question.isEnabled = true
     askButton.isEnabled = true
     setLoading(false)
     status.text =
@@ -159,6 +164,7 @@ class StudyModeActivity : AppCompatActivity() {
   private fun configureModelControls(model: ModelDescriptor?) {
     val reviewLicense = findViewById<Button>(R.id.study_review_model_license)
     val acceptLicense = findViewById<CheckBox>(R.id.study_accept_model_license)
+    val accessTokenContainer = findViewById<View>(R.id.study_hugging_face_token_container)
     val accessToken = findViewById<EditText>(R.id.study_hugging_face_token)
     val download = findViewById<Button>(R.id.study_download_model)
     val cancelDownload = findViewById<Button>(R.id.study_cancel_model_download)
@@ -167,7 +173,7 @@ class StudyModeActivity : AppCompatActivity() {
     if (model == null) {
       reviewLicense.visibility = View.GONE
       acceptLicense.visibility = View.GONE
-      accessToken.visibility = View.GONE
+      accessTokenContainer.visibility = View.GONE
       download.visibility = View.GONE
       return
     }
@@ -176,14 +182,15 @@ class StudyModeActivity : AppCompatActivity() {
         .setText(R.string.study_model_installed)
       reviewLicense.visibility = View.GONE
       acceptLicense.visibility = View.GONE
-      accessToken.visibility = View.GONE
+      accessTokenContainer.visibility = View.GONE
       download.visibility = View.GONE
       return
     }
 
     reviewLicense.visibility = if (model.requiresLicenseAcceptance) View.VISIBLE else View.GONE
     acceptLicense.visibility = if (model.requiresLicenseAcceptance) View.VISIBLE else View.GONE
-    accessToken.visibility = if (model.requiresLicenseAcceptance) View.VISIBLE else View.GONE
+    accessTokenContainer.visibility =
+      if (model.requiresLicenseAcceptance) View.VISIBLE else View.GONE
     download.visibility = View.VISIBLE
 
     reviewLicense.setOnClickListener {

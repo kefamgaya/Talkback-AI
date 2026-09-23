@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <color name="soma_study_background">#11101A</color>
+  <color name="soma_study_surface">#1C1A28</color>
+  <color name="soma_study_surface_tint">#242136</color>
+  <color name="soma_study_answer">#2C2518</color>
+  <color name="soma_study_text_primary">#F4F1FA</color>
+  <color name="soma_study_text_secondary">#BBB6C8</color>
+  <color name="soma_study_primary">#AFA7FF</color>
+  <color name="soma_study_border">#343140</color>
+  <color name="soma_study_success">#79D9B4</color>
+  <color name="soma_study_success_surface">#15372B</color>
+</resources>
