@@ -108,7 +108,7 @@ class ModelArtifactManager(context: Context) {
           HttpURLConnection.HTTP_UNAUTHORIZED,
           HttpURLConnection.HTTP_FORBIDDEN ->
             return ModelDownloadResult.Failure(
-              "Hugging Face access was denied. Accept the license and check the access token.",
+              "The public model could not be accessed. Check your connection and try again.",
               true,
             )
         }
@@ -196,7 +196,7 @@ class ModelArtifactManager(context: Context) {
         readTimeout = READ_TIMEOUT_MS
         requestMethod = "GET"
         setRequestProperty("Accept-Encoding", "identity")
-        setRequestProperty("User-Agent", "TalkBack-StudyMode/1")
+        setRequestProperty("User-Agent", "Soma-AI-Android/0.3")
         if (offset > 0L) setRequestProperty("Range", "bytes=$offset-")
         val isHuggingFaceHost =
           url.host == "huggingface.co" || url.host.endsWith(".huggingface.co")

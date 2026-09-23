@@ -43,46 +43,46 @@ object StudyModelCatalog {
   private const val GIB = 1024L * MIB
 
   /**
-   * Initial, deliberately small catalog. File names and sizes are pinned so the downloader can
-   * verify the selected artifact before inference is enabled.
+   * Deliberately small catalog of public, ungated Apache 2.0 artifacts. Revisions, file sizes, and
+   * hashes are pinned so a repository update cannot silently replace a downloaded model.
    */
   val models =
     listOf(
       ModelDescriptor(
-        id = "gemma-3-270m-q8",
-        displayName = "Gemma 3 270M (fast)",
+        id = "smollm2-360m-instruct-q8",
+        displayName = "SmolLM2 360M (fast)",
         source = ModelSource.HUGGING_FACE,
-        format = ModelFormat.LITERT_LM,
-        repositoryId = "litert-community/gemma-3-270m-it",
-        revision = "9d2093270fb5aa49a986b49b5779d763dde7b630",
-        fileName = "gemma3-270m-it-q8.litertlm",
-        licenseName = "Gemma",
-        downloadBytes = 304_005_120L,
-        expectedWorkingSetBytes = 900L * MIB,
+        format = ModelFormat.GGUF,
+        repositoryId = "HuggingFaceTB/SmolLM2-360M-Instruct-GGUF",
+        revision = "593b5a2e04c8f3e4ee880263f93e0bd2901ad47f",
+        fileName = "smollm2-360m-instruct-q8_0.gguf",
+        licenseName = "Apache-2.0",
+        downloadBytes = 386_404_992L,
+        expectedWorkingSetBytes = 850L * MIB,
         minimumTotalMemoryBytes = 3L * GIB,
-        minimumAvailableMemoryBytes = 700L * MIB,
+        minimumAvailableMemoryBytes = 750L * MIB,
         contextTokens = 2048,
         supportsVision = false,
-        requiresLicenseAcceptance = true,
-        sha256 = "757e9119fa5bd667a2774fb470ac4afcd3190a21c677f8e69a5d6bc908abdd63",
+        requiresLicenseAcceptance = false,
+        sha256 = "48ab3034d0dd401fbc721eb1df3217902fee7dab9078992d66431f09b7750201",
       ),
       ModelDescriptor(
-        id = "gemma-3-1b-q4",
-        displayName = "Gemma 3 1B (recommended quality)",
+        id = "qwen2.5-0.5b-instruct-q4",
+        displayName = "Qwen 2.5 0.5B (multilingual)",
         source = ModelSource.HUGGING_FACE,
-        format = ModelFormat.LITERT_LM,
-        repositoryId = "litert-community/Gemma3-1B-IT",
-        revision = "a6306a4e292016480083b73b8dc6f3f939ae04c3",
-        fileName = "gemma3-1b-it-int4.litertlm",
-        licenseName = "Gemma",
-        downloadBytes = 584_417_280L,
-        expectedWorkingSetBytes = 1700L * MIB,
-        minimumTotalMemoryBytes = 6L * GIB,
-        minimumAvailableMemoryBytes = 1300L * MIB,
+        format = ModelFormat.GGUF,
+        repositoryId = "Qwen/Qwen2.5-0.5B-Instruct-GGUF",
+        revision = "9217f5db79a29953eb74d5343926648285ec7e67",
+        fileName = "qwen2.5-0.5b-instruct-q4_k_m.gguf",
+        licenseName = "Apache-2.0",
+        downloadBytes = 491_400_032L,
+        expectedWorkingSetBytes = 1100L * MIB,
+        minimumTotalMemoryBytes = 4L * GIB,
+        minimumAvailableMemoryBytes = 950L * MIB,
         contextTokens = 4096,
         supportsVision = false,
-        requiresLicenseAcceptance = true,
-        sha256 = "1325ae366d31950f137c9c357b9fa89448b176d76998180c08ceaca78bba98be",
+        requiresLicenseAcceptance = false,
+        sha256 = "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db",
       ),
     )
 }
@@ -128,7 +128,7 @@ object ModelRecommendationEngine {
       model = selected,
       explanation =
         "Recommended: ${selected.displayName}. Download size: $sizeMb MB. " +
-          "A device benchmark will run after download before the model is enabled.",
+          "It is public, Apache 2.0 licensed, and needs no account or access token.",
     )
   }
 }
