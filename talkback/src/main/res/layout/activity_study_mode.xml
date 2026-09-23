@@ -170,6 +170,20 @@
         android:textSize="16sp"
         android:visibility="gone" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/study_read_note_button"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:enabled="false"
+        android:text="@string/study_read_note_aloud"
+        android:textAllCaps="false"
+        android:visibility="gone"
+        app:icon="@drawable/soma_volume"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp" />
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -216,6 +230,19 @@
           android:paddingBottom="18dp"
           android:textColor="@color/soma_study_text_primary" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/study_voice_question_button"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="4dp"
+        android:enabled="false"
+        android:text="@string/study_ask_by_voice"
+        android:textAllCaps="false"
+        app:icon="@drawable/soma_microphone"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/study_ask_button"

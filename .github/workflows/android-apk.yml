@@ -75,12 +75,14 @@ jobs:
           grep -F "launchable-activity: name='com.google.android.accessibility.talkback.study.StudyModeActivity'" <<< "$badging"
 
           permissions="$(sed -n "s/^uses-permission: name='\([^']*\)'.*/\1/p" <<< "$badging")"
-          unexpected="$(grep -vFx 'android.permission.INTERNET' <<< "$permissions" || true)"
+          unexpected="$(grep -vEx 'android.permission.(INTERNET|RECORD_AUDIO)' <<< "$permissions" || true)"
           if [[ -n "$unexpected" ]]; then
             echo "Unexpected permissions in APK:" >&2
             echo "$unexpected" >&2
             exit 1
           fi
+          grep -Fx 'android.permission.INTERNET' <<< "$permissions"
+          grep -Fx 'android.permission.RECORD_AUDIO' <<< "$permissions"
 
       - name: Prepare APK
         id: apk

@@ -6,9 +6,10 @@ passages, and download a local language model selected for their phone's
 hardware. Notes remain on the device.
 
 The Android package is `com.kefamgaya.somaai`. The installed application asks
-for no microphone, contacts, location, phone, notification, Bluetooth, broad
-storage, package-list, or accessibility-service permission. Internet access is
-used only when the student chooses to download a local model.
+for no contacts, location, phone, notification, Bluetooth, broad storage,
+package-list, or accessibility-service permission. Internet access is used for
+optional model downloads. Microphone access is optional and requested only when
+the student taps **Ask by voice**; Android's on-device recognizer is required.
 
 This project began from the open-source Google TalkBack codebase. The original
 Apache 2.0 license and copyright notices are retained.

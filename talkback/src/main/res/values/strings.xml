@@ -15,6 +15,16 @@
     <string name="study_loading_note_title">Opening your note…</string>
     <string name="study_question_section_title">Find it in your note</string>
     <string name="study_question_section_description">Ask in your own words. Soma AI will bring the most relevant passages into focus.</string>
+    <string name="study_ask_by_voice">Ask by voice</string>
+    <string name="study_voice_listening">Listening on this phone…</string>
+    <string name="study_voice_processing">Turning your speech into text…</string>
+    <string name="study_voice_unavailable">Offline voice recognition is not available on this phone. Install an offline speech language in Android settings or type your question.</string>
+    <string name="study_voice_permission_denied">Microphone access is needed only while you ask by voice. You can still type your question.</string>
+    <string name="study_voice_error">I could not understand that. Try again or type your question.</string>
+    <string name="study_read_note_aloud">Read note aloud</string>
+    <string name="study_stop_reading">Stop reading</string>
+    <string name="study_reading_note">Reading with an offline device voice…</string>
+    <string name="study_offline_voice_unavailable">No offline reading voice is installed. Add an offline text-to-speech voice in Android settings.</string>
     <string name="study_model_section_label">Optional setup</string>
     <string name="study_model_section_title">Prepare offline AI</string>
     <string name="study_review_model_license">Review model license</string>

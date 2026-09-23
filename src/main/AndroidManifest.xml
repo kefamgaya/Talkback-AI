@@ -4,6 +4,8 @@
 
   <!-- Soma AI only needs network access to download an optional local model. -->
   <uses-permission android:name="android.permission.INTERNET" />
+  <!-- Requested at runtime only after the student taps Ask by voice. -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
   <!-- Remove permissions inherited from the TalkBack and Braille libraries. -->
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" tools:node="remove" />
@@ -20,7 +22,6 @@
   <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:node="remove" />
   <uses-permission android:name="android.permission.READ_PHONE_STATE" tools:node="remove" />
   <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" tools:node="remove" />
-  <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
   <uses-permission android:name="android.permission.USE_FINGERPRINT" tools:node="remove" />
   <uses-permission android:name="android.permission.VIBRATE" tools:node="remove" />
   <uses-permission android:name="android.permission.WAKE_LOCK" tools:node="remove" />
@@ -43,7 +44,10 @@
 
   <!-- The student app does not require dedicated hardware. -->
   <uses-feature android:name="android.hardware.location" tools:node="remove" />
-  <uses-feature android:name="android.hardware.microphone" tools:node="remove" />
+  <uses-feature
+      android:name="android.hardware.microphone"
+      android:required="false"
+      tools:replace="android:required" />
   <uses-feature android:name="android.hardware.sensor.accelerometer" tools:node="remove" />
   <uses-feature android:name="android.hardware.touchscreen" tools:node="remove" />
   <uses-feature android:name="android.hardware.usb.host" tools:node="remove" />
