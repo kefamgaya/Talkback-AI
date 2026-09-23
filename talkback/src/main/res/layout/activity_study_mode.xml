@@ -73,7 +73,7 @@
       android:background="@color/soma_study_surface"
       android:minHeight="72dp"
       android:paddingTop="4dp"
-      app:itemActiveIndicatorColor="@color/soma_study_surface_tint"
+      app:itemBackground="@drawable/soma_bottom_navigation_background"
       app:itemIconTint="@color/soma_bottom_navigation_color"
       app:itemTextColor="@color/soma_bottom_navigation_color"
       app:labelVisibilityMode="labeled"
