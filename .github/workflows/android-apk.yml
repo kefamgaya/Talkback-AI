@@ -67,8 +67,10 @@ jobs:
         run: |
           apk_path="$(find build/outputs/apk/phone/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
           test -n "$apk_path"
+          aapt2="$ANDROID_SDK_ROOT/build-tools/36.0.0/aapt2"
+          test -x "$aapt2"
 
-          badging="$(aapt2 dump badging "$apk_path")"
+          badging="$("$aapt2" dump badging "$apk_path")"
           grep -F "package: name='com.kefamgaya.somaai'" <<< "$badging"
           grep -F "launchable-activity: name='com.google.android.accessibility.talkback.study.StudyModeActivity'" <<< "$badging"
 
