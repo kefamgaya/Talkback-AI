@@ -40,12 +40,12 @@ allprojects {
 }
 
 android {
-    namespace "com.android.talkback"
+    namespace "com.kefamgaya.somaai"
     defaultConfig {
         applicationId talkbackApplicationId
         versionName talkbackVersionName + "-" + BUILD_TIMESTAMP
         minSdkVersion 26
-        targetSdkVersion 30
+        targetSdkVersion 36
         testInstrumentationRunner 'android.test.InstrumentationTestRunner'
         multiDexEnabled true
     }

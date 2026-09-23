@@ -1,4 +1,4 @@
-name: Build and publish Android APK
+name: Build and publish Soma AI APK
 
 on:
   push:
@@ -62,6 +62,24 @@ jobs:
             --stacktrace \
             assemblePhoneDebug
 
+      - name: Verify APK identity and privacy
+        shell: bash
+        run: |
+          apk_path="$(find build/outputs/apk/phone/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
+          test -n "$apk_path"
+
+          badging="$(aapt2 dump badging "$apk_path")"
+          grep -F "package: name='com.kefamgaya.somaai'" <<< "$badging"
+          grep -F "launchable-activity: name='com.google.android.accessibility.talkback.study.StudyModeActivity'" <<< "$badging"
+
+          permissions="$(sed -n "s/^uses-permission: name='\([^']*\)'.*/\1/p" <<< "$badging")"
+          unexpected="$(grep -vFx 'android.permission.INTERNET' <<< "$permissions" || true)"
+          if [[ -n "$unexpected" ]]; then
+            echo "Unexpected permissions in APK:" >&2
+            echo "$unexpected" >&2
+            exit 1
+          fi
+
       - name: Prepare APK
         id: apk
         shell: bash
@@ -76,7 +94,7 @@ jobs:
           fi
 
           mkdir -p dist
-          destination="dist/Talkback-AI-${version}.apk"
+          destination="dist/Soma-AI-${version}.apk"
           cp "$apk_path" "$destination"
           echo "path=$destination" >> "$GITHUB_OUTPUT"
 
@@ -115,4 +133,4 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
             --generate-notes \
-            --title "Talkback AI $GITHUB_REF_NAME"
+            --title "Soma AI $GITHUB_REF_NAME"

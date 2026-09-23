@@ -3,7 +3,7 @@
 android.buildFeatures.buildConfig true
 
 ext {
-    talkbackApplicationId = "com.android.talkback"
+    talkbackApplicationId = "com.kefamgaya.somaai"
 }
 
 android {

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Soma AI</string>
+  <color name="soma_icon_background">#F7F5FF</color>
+  <color name="soma_primary">#312E81</color>
+  <color name="soma_primary_dark">#1E1B4B</color>
+  <color name="soma_accent">#F59E0B</color>
+
+  <style name="SomaAiTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <item name="colorPrimary">@color/soma_primary</item>
+    <item name="colorPrimaryDark">@color/soma_primary_dark</item>
+    <item name="colorAccent">@color/soma_accent</item>
+    <item name="android:fontFamily">sans</item>
+    <item name="android:navigationBarColor">@color/soma_icon_background</item>
+    <item name="android:statusBarColor">@color/soma_primary_dark</item>
+    <item name="android:windowLightNavigationBar">true</item>
+  </style>
+</resources>

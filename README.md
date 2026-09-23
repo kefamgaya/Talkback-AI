@@ -1,20 +1,30 @@
-# Introduction
+# Soma AI
 
-This repository contains source code for Google's TalkBack, which is a screen
-reader for blind and visually-impaired users of Android. For usage instructions,
-see
-[TalkBack User Guide](https://support.google.com/accessibility/android/answer/6283677?hl=en).
+Soma AI is a private, on-device study companion for Android. Students can open
+their own text notes, read them in an accessible interface, find relevant
+passages, and download a local language model selected for their phone's
+hardware. Notes remain on the device.
+
+The Android package is `com.kefamgaya.somaai`. The installed application asks
+for no microphone, contacts, location, phone, notification, Bluetooth, broad
+storage, package-list, or accessibility-service permission. Internet access is
+used only when the student chooses to download a local model.
+
+This project began from the open-source Google TalkBack codebase. The original
+Apache 2.0 license and copyright notices are retained.
 
 ### How to Build
 
-To build TalkBack, run ./build.sh, which will produce an apk file.
+Run `gradle assemblePhoneDebug`, or use the GitHub Actions workflow. Each
+successful workflow run stores an APK artifact, and a `v*` tag publishes the APK
+to GitHub Releases.
 
 ### How to Install
 
-Install the apk onto your Android device in the usual manner using adb.
+Download the latest APK from GitHub Releases and install it, or use `adb install`.
 
 ### How to Run
 
-With the apk now installed on the device, the TalkBack service should now be
-present under Settings -> Accessibility, and will be off by default. To turn it
-on, toggle the switch preference to the on position.
+Open **Soma AI** from the normal app launcher. Use **Open a note** to choose a
+supported document through Android's system document picker; broad storage
+access is not required.

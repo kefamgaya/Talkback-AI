@@ -4,8 +4,8 @@
 
     <!--The human-readable name of this service. Do not translate. -->
     <string name="talkback_title" translatable="false">TalkBack_TfP</string>
-    <string name="study_mode_title">Study Mode</string>
-    <string name="study_mode_description">Open a note, read it accessibly, and find passages related to your questions. Notes stay on this phone.</string>
+    <string name="study_mode_title">Soma AI</string>
+    <string name="study_mode_description">Learn privately from your own notes. Open a document, read it, and ask questions without sending its contents away from your phone.</string>
     <string name="study_open_note">Open a note</string>
     <string name="study_review_model_license">Review model license</string>
     <string name="study_accept_model_license">I have reviewed and accept the model license</string>
