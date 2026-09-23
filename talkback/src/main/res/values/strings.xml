@@ -24,6 +24,7 @@
     <string name="study_read_note_aloud">Read note aloud</string>
     <string name="study_stop_reading">Stop reading</string>
     <string name="study_reading_note">Reading with an offline device voice…</string>
+    <string name="study_reading_answer">Reading the answer with an offline device voice…</string>
     <string name="study_offline_voice_unavailable">No offline reading voice is installed. Add an offline text-to-speech voice in Android settings.</string>
     <string name="study_model_section_label">Optional setup</string>
     <string name="study_model_section_title">Prepare offline AI</string>
@@ -32,7 +33,7 @@
     <string name="study_hugging_face_token_hint">Hugging Face token, if required</string>
     <string name="study_download_recommended_model">Download for offline AI</string>
     <string name="study_cancel_model_download">Cancel model download</string>
-    <string name="study_model_installed">Model downloaded and verified. The local conversation engine is the next setup step.</string>
+    <string name="study_model_installed">Model downloaded and verified on this phone.</string>
     <string name="study_model_download_started">Downloading the local model…</string>
     <string name="study_model_download_percent">Model download: %1$d%%</string>
     <string name="study_model_download_cancelled">Model download cancelled.</string>
@@ -50,6 +51,38 @@
     <string name="study_question_required">Enter a question first.</string>
     <string name="study_no_relevant_passage">I could not find a passage matching that question in this note.</string>
     <string name="study_source_citation">Source: %1$s</string>
+    <string name="nav_study">Study</string>
+    <string name="nav_models">Models</string>
+    <string name="nav_settings">Settings</string>
+    <string name="study_page_subtitle">Read, listen, and ask</string>
+    <string name="models_page_subtitle">Offline AI for this phone</string>
+    <string name="settings_page_subtitle">Privacy, speech, and study</string>
+    <string name="models_title">Your offline AI</string>
+    <string name="models_description">Soma checks this phone and recommends a small public model that should run comfortably. Downloads are optional.</string>
+    <string name="models_phone_match_label">Best match for this phone</string>
+    <string name="models_ready_to_download">Ready when you are. Nothing downloads automatically.</string>
+    <string name="models_not_available">This phone does not currently have enough safe memory and storage headroom for a listed model.</string>
+    <string name="models_why_title">Why this model?</string>
+    <string name="models_why_description">The recommendation considers 64-bit support, memory currently available, total memory, and free storage. The selected files are public, pinned to an exact revision, and verified after download.</string>
+    <string name="settings_title">Make Soma yours</string>
+    <string name="settings_description">Choose how Soma behaves. Privacy-first defaults stay visible and editable.</string>
+    <string name="settings_study_section">Study experience</string>
+    <string name="settings_read_answers">Read answers aloud automatically</string>
+    <string name="settings_keep_screen_on">Keep screen awake while studying</string>
+    <string name="settings_speech_section">Offline speech</string>
+    <string name="settings_speech_ready">On-device dictation and an offline reading voice are available.</string>
+    <string name="settings_speech_partial">Some offline speech features are missing. Open Android voice settings to install a language or voice.</string>
+    <string name="settings_open_voice_settings">Open Android voice settings</string>
+    <string name="settings_privacy_section">Privacy and storage</string>
+    <string name="settings_microphone_allowed">Microphone: allowed for Ask by voice.</string>
+    <string name="settings_microphone_not_allowed">Microphone: not allowed. Soma will ask only when you use Ask by voice.</string>
+    <string name="settings_manage_permissions">Manage microphone permission</string>
+    <string name="settings_manage_models">Manage downloaded AI models</string>
+    <string name="settings_clear_note">Close the current note</string>
+    <string name="settings_note_cleared">Current note closed. The original file was not changed.</string>
+    <string name="settings_about_section">About</string>
+    <string name="settings_version">Soma AI %1$s</string>
+    <string name="settings_privacy_promise">Notes are opened through Android’s document picker and processed on this phone. Soma does not request contacts, location, phone, broad storage, or accessibility-service access.</string>
 
     <!--
       Source: A brief description of TalkBack.

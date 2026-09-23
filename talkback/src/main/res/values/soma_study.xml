@@ -10,4 +10,23 @@
   <color name="soma_study_border">#E5E2EE</color>
   <color name="soma_study_success">#176B4D</color>
   <color name="soma_study_success_surface">#EAF7F1</color>
+
+  <style name="SomaSettingsSectionTitle">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:accessibilityHeading">true</item>
+    <item name="android:fontFamily">sans-serif-medium</item>
+    <item name="android:letterSpacing">0.06</item>
+    <item name="android:textAllCaps">true</item>
+    <item name="android:textColor">@color/soma_study_primary</item>
+    <item name="android:textSize">12sp</item>
+  </style>
+
+  <style name="SomaSettingsBody">
+    <item name="android:layout_width">match_parent</item>
+    <item name="android:layout_height">wrap_content</item>
+    <item name="android:lineSpacingExtra">3dp</item>
+    <item name="android:textColor">@color/soma_study_text_secondary</item>
+    <item name="android:textSize">14sp</item>
+  </style>
 </resources>

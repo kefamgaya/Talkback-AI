@@ -10,24 +10,38 @@ package com.google.android.accessibility.talkback.study
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.view.View
+import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.updatePadding
 import com.google.android.accessibility.talkback.R
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.materialswitch.MaterialSwitch
 import java.util.Locale
 import java.util.concurrent.Executors
 
@@ -45,10 +59,16 @@ class StudyModeActivity : AppCompatActivity() {
   private lateinit var askButton: Button
   private lateinit var voiceButton: Button
   private lateinit var readButton: Button
+  private lateinit var modelStatus: TextView
+  private lateinit var pageTitle: TextView
+  private lateinit var pageSubtitle: TextView
+  private lateinit var bottomNavigation: BottomNavigationView
   private var currentDocument: StudyDocument? = null
+  private var currentPage = AppPage.STUDY
   private var speechRecognizer: SpeechRecognizer? = null
   private var textToSpeech: TextToSpeech? = null
   private var offlineVoiceReady = false
+  private val preferences by lazy { getSharedPreferences(PREFERENCES_NAME, MODE_PRIVATE) }
 
   private val openDocument =
     registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -60,12 +80,14 @@ class StudyModeActivity : AppCompatActivity() {
 
   private val requestMicrophone =
     registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+      refreshSettingsStatus()
       if (granted) startVoiceRecognition()
       else showStatus(R.string.study_voice_permission_denied)
     }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    configureEdgeToEdge()
     setContentView(R.layout.activity_study_mode)
     repository = StudyDocumentRepository(contentResolver)
     modelArtifacts = ModelArtifactManager(this)
@@ -78,6 +100,10 @@ class StudyModeActivity : AppCompatActivity() {
     askButton = findViewById(R.id.study_ask_button)
     voiceButton = findViewById(R.id.study_voice_question_button)
     readButton = findViewById(R.id.study_read_note_button)
+    modelStatus = findViewById(R.id.model_status)
+    pageTitle = findViewById(R.id.soma_page_title)
+    pageSubtitle = findViewById(R.id.soma_page_subtitle)
+    bottomNavigation = findViewById(R.id.soma_bottom_navigation)
 
     findViewById<Button>(R.id.study_open_note_button).setOnClickListener {
       openDocument.launch(
@@ -88,9 +114,17 @@ class StudyModeActivity : AppCompatActivity() {
     voiceButton.setOnClickListener { beginVoiceQuestion() }
     readButton.setOnClickListener { toggleReading() }
 
+    applySafeAreas()
+    setupNavigation()
+    setupSettings()
     initializeOfflineReadingVoice()
     showHardwareRecommendation()
     handleIncomingDocument(intent)
+  }
+
+  override fun onResume() {
+    super.onResume()
+    refreshSettingsStatus()
   }
 
   override fun onNewIntent(intent: Intent) {
@@ -111,7 +145,10 @@ class StudyModeActivity : AppCompatActivity() {
 
   private fun handleIncomingDocument(intent: Intent?) {
     val uri = intent?.data ?: return
-    if (intent.action == Intent.ACTION_VIEW) loadDocument(uri)
+    if (intent.action == Intent.ACTION_VIEW) {
+      bottomNavigation.selectedItemId = R.id.navigation_study
+      loadDocument(uri)
+    }
   }
 
   private fun loadDocument(uri: Uri) {
@@ -187,6 +224,7 @@ class StudyModeActivity : AppCompatActivity() {
         askButton.isEnabled = true
         status.setText(R.string.study_note_ready)
         answer.announceForAccessibility(answer.text)
+        if (preferences.getBoolean(KEY_READ_ANSWERS, false)) readAnswerAloud(answer.text.toString())
       }
     }
   }
@@ -211,6 +249,7 @@ class StudyModeActivity : AppCompatActivity() {
       acceptLicense.visibility = View.GONE
       accessTokenContainer.visibility = View.GONE
       download.visibility = View.GONE
+      modelStatus.setText(R.string.models_not_available)
       return
     }
     if (modelArtifacts.isInstalled(model)) {
@@ -220,8 +259,11 @@ class StudyModeActivity : AppCompatActivity() {
       acceptLicense.visibility = View.GONE
       accessTokenContainer.visibility = View.GONE
       download.visibility = View.GONE
+      modelStatus.setText(R.string.study_model_installed)
       return
     }
+
+    modelStatus.setText(R.string.models_ready_to_download)
 
     reviewLicense.visibility = if (model.requiresLicenseAcceptance) View.VISIBLE else View.GONE
     acceptLicense.visibility = if (model.requiresLicenseAcceptance) View.VISIBLE else View.GONE
@@ -259,7 +301,7 @@ class StudyModeActivity : AppCompatActivity() {
       it.isEnabled = false
       modelArtifacts.cancel()
     }
-    status.setText(R.string.study_model_download_started)
+    modelStatus.setText(R.string.study_model_download_started)
 
     downloadWorker.execute {
       val result =
@@ -268,7 +310,7 @@ class StudyModeActivity : AppCompatActivity() {
             progress.percent?.let { percent ->
               progressBar.isIndeterminate = false
               progressBar.progress = percent
-              status.text = getString(R.string.study_model_download_percent, percent)
+              modelStatus.text = getString(R.string.study_model_download_percent, percent)
             }
           }
         }
@@ -286,18 +328,185 @@ class StudyModeActivity : AppCompatActivity() {
     findViewById<EditText>(R.id.study_hugging_face_token).text.clear()
     when (result) {
       is ModelDownloadResult.Success -> {
-        status.setText(R.string.study_model_installed)
+        modelStatus.setText(R.string.study_model_installed)
         configureModelControls(model)
       }
       is ModelDownloadResult.Failure -> {
-        status.text = result.message
+        modelStatus.text = result.message
         downloadButton.isEnabled = result.canRetry
       }
       ModelDownloadResult.Cancelled -> {
-        status.setText(R.string.study_model_download_cancelled)
+        modelStatus.setText(R.string.study_model_download_cancelled)
         downloadButton.isEnabled = true
       }
     }
+    modelStatus.announceForAccessibility(modelStatus.text)
+  }
+
+  private fun configureEdgeToEdge() {
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+    window.statusBarColor = Color.TRANSPARENT
+    window.navigationBarColor = Color.TRANSPARENT
+    val isDarkMode =
+      resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+        Configuration.UI_MODE_NIGHT_YES
+    WindowInsetsControllerCompat(window, window.decorView).apply {
+      isAppearanceLightStatusBars = !isDarkMode
+      isAppearanceLightNavigationBars = !isDarkMode
+    }
+  }
+
+  private fun applySafeAreas() {
+    val root = findViewById<View>(R.id.soma_root)
+    val topBar = findViewById<View>(R.id.soma_top_bar)
+    val bottomBar = findViewById<View>(R.id.soma_bottom_navigation)
+    val initialRootPadding =
+      Insets.of(root.paddingLeft, root.paddingTop, root.paddingRight, root.paddingBottom)
+    val initialTopPadding = topBar.paddingTop
+    val initialBottomPadding = bottomBar.paddingBottom
+    ViewCompat.setOnApplyWindowInsetsListener(root) { view, windowInsets ->
+      val safeInsets =
+        windowInsets.getInsets(
+          WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+        )
+      val imeInsets = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+      view.updatePadding(
+        left = initialRootPadding.left + safeInsets.left,
+        top = initialRootPadding.top,
+        right = initialRootPadding.right + safeInsets.right,
+        bottom = initialRootPadding.bottom + (imeInsets.bottom - safeInsets.bottom).coerceAtLeast(0),
+      )
+      topBar.updatePadding(top = initialTopPadding + safeInsets.top)
+      bottomBar.updatePadding(bottom = initialBottomPadding + safeInsets.bottom)
+      windowInsets
+    }
+    ViewCompat.requestApplyInsets(root)
+  }
+
+  private fun setupNavigation() {
+    bottomNavigation.setOnItemSelectedListener { item ->
+      when (item.itemId) {
+        R.id.navigation_study -> showPage(AppPage.STUDY)
+        R.id.navigation_models -> showPage(AppPage.MODELS)
+        R.id.navigation_settings -> showPage(AppPage.SETTINGS)
+        else -> return@setOnItemSelectedListener false
+      }
+      true
+    }
+    onBackPressedDispatcher.addCallback(
+      this,
+      object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+          if (currentPage != AppPage.STUDY) {
+            bottomNavigation.selectedItemId = R.id.navigation_study
+          } else {
+            isEnabled = false
+            onBackPressedDispatcher.onBackPressed()
+          }
+        }
+      },
+    )
+  }
+
+  private fun showPage(page: AppPage) {
+    currentPage = page
+    findViewById<View>(R.id.study_page).visibility =
+      if (page == AppPage.STUDY) View.VISIBLE else View.GONE
+    findViewById<View>(R.id.models_page).visibility =
+      if (page == AppPage.MODELS) View.VISIBLE else View.GONE
+    findViewById<View>(R.id.settings_page).visibility =
+      if (page == AppPage.SETTINGS) View.VISIBLE else View.GONE
+    val titleAndSubtitle =
+      when (page) {
+        AppPage.STUDY -> R.string.nav_study to R.string.study_page_subtitle
+        AppPage.MODELS -> R.string.nav_models to R.string.models_page_subtitle
+        AppPage.SETTINGS -> R.string.nav_settings to R.string.settings_page_subtitle
+      }
+    pageTitle.setText(titleAndSubtitle.first)
+    pageSubtitle.setText(titleAndSubtitle.second)
+    currentFocus?.let { focusedView ->
+      (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
+        .hideSoftInputFromWindow(focusedView.windowToken, 0)
+      focusedView.clearFocus()
+    }
+    pageTitle.announceForAccessibility(pageTitle.text)
+    if (page == AppPage.SETTINGS) refreshSettingsStatus()
+  }
+
+  private fun setupSettings() {
+    val readAnswers = findViewById<MaterialSwitch>(R.id.settings_read_answers_switch)
+    val keepScreenOn = findViewById<MaterialSwitch>(R.id.settings_keep_screen_on_switch)
+    readAnswers.isChecked = preferences.getBoolean(KEY_READ_ANSWERS, false)
+    keepScreenOn.isChecked = preferences.getBoolean(KEY_KEEP_SCREEN_ON, false)
+    applyKeepScreenOn(keepScreenOn.isChecked)
+    readAnswers.setOnCheckedChangeListener { _, checked ->
+      preferences.edit().putBoolean(KEY_READ_ANSWERS, checked).apply()
+    }
+    keepScreenOn.setOnCheckedChangeListener { _, checked ->
+      preferences.edit().putBoolean(KEY_KEEP_SCREEN_ON, checked).apply()
+      applyKeepScreenOn(checked)
+    }
+    findViewById<Button>(R.id.settings_open_voice_settings).setOnClickListener {
+      val voiceSettings = Intent(ACTION_TTS_SETTINGS)
+      runCatching { startActivity(voiceSettings) }
+        .onFailure { startActivity(Intent(Settings.ACTION_SETTINGS)) }
+    }
+    findViewById<Button>(R.id.settings_manage_permissions).setOnClickListener {
+      startActivity(
+        Intent(
+          Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+          Uri.parse("package:$packageName"),
+        )
+      )
+    }
+    findViewById<Button>(R.id.settings_manage_models).setOnClickListener {
+      bottomNavigation.selectedItemId = R.id.navigation_models
+    }
+    findViewById<Button>(R.id.settings_clear_note).setOnClickListener { clearCurrentNote() }
+    @Suppress("DEPRECATION")
+    val versionName = packageManager.getPackageInfo(packageName, 0).versionName ?: ""
+    findViewById<TextView>(R.id.settings_version).text =
+      getString(R.string.settings_version, versionName)
+  }
+
+  private fun applyKeepScreenOn(enabled: Boolean) {
+    if (enabled) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+  }
+
+  private fun refreshSettingsStatus() {
+    if (!::status.isInitialized) return
+    val microphoneAllowed =
+      ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) ==
+        PackageManager.PERMISSION_GRANTED
+    findViewById<TextView>(R.id.settings_permission_status).setText(
+      if (microphoneAllowed) R.string.settings_microphone_allowed
+      else R.string.settings_microphone_not_allowed
+    )
+    val onDeviceRecognition =
+      Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+        SpeechRecognizer.isOnDeviceRecognitionAvailable(this)
+    findViewById<TextView>(R.id.settings_speech_status).setText(
+      if (onDeviceRecognition && offlineVoiceReady) R.string.settings_speech_ready
+      else R.string.settings_speech_partial
+    )
+  }
+
+  private fun clearCurrentNote() {
+    currentDocument = null
+    stopReading()
+    documentTitle.setText(R.string.study_empty_note_title)
+    documentBody.text = ""
+    documentBody.visibility = View.GONE
+    question.text.clear()
+    question.isEnabled = false
+    answer.text = ""
+    answer.visibility = View.GONE
+    askButton.isEnabled = false
+    voiceButton.isEnabled = false
+    readButton.isEnabled = false
+    readButton.visibility = View.GONE
+    status.setText(R.string.settings_note_cleared)
     status.announceForAccessibility(status.text)
   }
 
@@ -412,12 +621,17 @@ class StudyModeActivity : AppCompatActivity() {
           if (selectedVoice != null) {
             offlineVoiceReady = engine.setVoice(selectedVoice) == TextToSpeech.SUCCESS
           }
+          runOnUiThread { refreshSettingsStatus() }
           engine.setOnUtteranceProgressListener(
             object : UtteranceProgressListener() {
               override fun onStart(utteranceId: String?) = Unit
 
               override fun onDone(utteranceId: String?) {
-                if (utteranceId == LAST_UTTERANCE_ID) runOnUiThread { finishReading() }
+                when (utteranceId) {
+                  LAST_UTTERANCE_ID -> runOnUiThread { finishReading() }
+                  LAST_ANSWER_UTTERANCE_ID ->
+                    runOnUiThread { status.setText(R.string.study_note_ready) }
+                }
               }
 
               override fun onError(utteranceId: String?) {
@@ -447,6 +661,20 @@ class StudyModeActivity : AppCompatActivity() {
     chunks.forEachIndexed { index, chunk ->
       val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
       val utteranceId = if (index == chunks.lastIndex) LAST_UTTERANCE_ID else "soma-note-$index"
+      engine.speak(chunk, queueMode, Bundle(), utteranceId)
+    }
+  }
+
+  private fun readAnswerAloud(text: String) {
+    val engine = textToSpeech
+    if (!offlineVoiceReady || engine == null) return
+    val chunks = chunkForSpeech(text)
+    if (chunks.isEmpty()) return
+    showStatus(R.string.study_reading_answer)
+    chunks.forEachIndexed { index, chunk ->
+      val queueMode = if (index == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD
+      val utteranceId =
+        if (index == chunks.lastIndex) LAST_ANSWER_UTTERANCE_ID else "soma-answer-$index"
       engine.speak(chunk, queueMode, Bundle(), utteranceId)
     }
   }
@@ -488,6 +716,17 @@ class StudyModeActivity : AppCompatActivity() {
   }
 
   private companion object {
+    const val PREFERENCES_NAME = "soma_ai_settings"
+    const val KEY_READ_ANSWERS = "read_answers"
+    const val KEY_KEEP_SCREEN_ON = "keep_screen_on"
     const val LAST_UTTERANCE_ID = "soma-note-last"
+    const val LAST_ANSWER_UTTERANCE_ID = "soma-answer-last"
+    const val ACTION_TTS_SETTINGS = "com.android.settings.TTS_SETTINGS"
+  }
+
+  private enum class AppPage {
+    STUDY,
+    MODELS,
+    SETTINGS,
   }
 }

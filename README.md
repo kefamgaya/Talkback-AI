@@ -11,6 +11,12 @@ package-list, or accessibility-service permission. Internet access is used for
 optional model downloads. Microphone access is optional and requested only when
 the student taps **Ask by voice**; Android's on-device recognizer is required.
 
+The launcher experience has three accessible destinations: **Study** for notes
+and questions, **Models** for hardware-aware local AI downloads, and
+**Settings** for speech, study behavior, permissions, and privacy controls.
+System bars, display cutouts, gesture navigation, and the keyboard are handled
+with runtime window insets instead of fixed device-specific padding.
+
 This project began from the open-source Google TalkBack codebase. The original
 Apache 2.0 license and copyright notices are retained.
 
